@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數字找找看 - 鄭凱文設計版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+TC:wght@400;700&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #f472b6;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+        }
+
+        .number-card {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .number-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .number-card.selected {
+            background: var(--primary);
+            color: white;
+            border-color: transparent;
+            transform: scale(1.08);
+            z-index: 10;
+        }
+
+        .number-card.correct {
+            background: #10b981;
+            color: white;
+            border-color: transparent;
+            animation: celebrate 0.6s ease;
+        }
+
+        .number-card.wrong {
+            background: #f43f5e;
+            color: white;
+            border-color: transparent;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); rotate: 0deg; }
+            25% { transform: scale(1.2); rotate: 5deg; }
+            50% { transform: scale(1.2); rotate: -5deg; }
+            100% { transform: scale(1); rotate: 0deg; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        /* 自定義滑桿樣式 */
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: var(--primary); margin-top: -7px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        .designer-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .designer-link:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .designer-link::after {
+            content: '';
+            position: absolute;
+            width: 0; height: 2px; bottom: -2px; left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        .designer-link:hover::after { width: 100%; }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <!-- 背景裝飾圓形 -->
+    <div class="fixed top-[-5%] left-[-5%] w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    <div class="fixed bottom-[-5%] right-[-5%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+    <!-- 初始設定畫面 -->
+    <div id="setup-screen" class="glass-panel p-10 rounded-[2.5rem] max-w-lg w-full z-10">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-gray-800 tracking-tight mb-2">數字對對碰</h1>
+            <p class="text-gray-400 font-bold uppercase tracking-widest text-xs">Visual Focus Challenge</p>
+        </div>
+        
+        <div class="space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2 bg-white/50 p-4 rounded-2xl">
+                    <label class="text-xs font-black text-indigo-600 uppercase tracking-wider">總題目數</label>
+                    <div class="flex items-center justify-between">
+                        <span id="total-rounds-display" class="text-2xl font-black text-gray-800">5</span>
+                        <input type="range" id="total-rounds" min="1" max="20" step="1" value="5" class="w-24">
+                    </div>
+                </div>
+                <div class="space-y-2 bg-white/50 p-4 rounded-2xl">
+                    <label class="text-xs font-black text-indigo-600 uppercase tracking-wider">單題數量</label>
+                    <div class="flex items-center justify-between">
+                        <span id="count-display" class="text-2xl font-black text-gray-800">30</span>
+                        <input type="range" id="item-count" min="10" max="100" step="2" value="30" class="w-24">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/50 p-4 rounded-2xl space-y-4">
+                <label class="text-xs font-black text-indigo-600 uppercase tracking-wider">數字範圍設定</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" id="min-range" value="1" class="w-full bg-white rounded-xl px-4 py-3 outline-none transition-all font-bold border-2 border-transparent focus:border-indigo-400">
+                    <input type="number" id="max-range" value="500" class="w-full bg-white rounded-xl px-4 py-3 outline-none transition-all font-bold border-2 border-transparent focus:border-indigo-400">
+                </div>
+                <p id="range-error" class="text-red-500 text-xs text-center hidden font-bold">⚠️ 區間範圍不足以容納所有數字！</p>
+            </div>
+
+            <div class="bg-white/50 p-4 rounded-2xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-black text-indigo-600 uppercase tracking-wider">單題限時</label>
+                    <span id="time-display" class="text-xl font-black text-gray-800">10s</span>
+                </div>
+                <input type="range" id="game-time" min="3" max="60" step="1" value="10" class="w-full">
+            </div>
+
+            <button id="start-btn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-indigo-500/50 text-white font-black py-5 rounded-2xl text-xl transition-all shadow-xl active:scale-95">
+                開始挑戰
+            </button>
+
+            <!-- 鄭凱文設計師連結 -->
+            <div class="text-center pt-4 border-t border-gray-100">
+                <a href="https://www.facebook.com/kevin.pptgame" target="_blank" class="designer-link text-gray-400 font-bold text-sm">
+                    設計：簡報遊戲設計師 - 鄭凱文
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲主畫面 -->
+    <div id="game-screen" class="hidden w-full max-w-6xl flex flex-col items-center z-10">
+        <div class="w-full flex flex-col md:flex-row justify-between items-center mb-8 px-8 py-6 glass-panel rounded-[2rem] gap-6">
+            <div class="flex items-center gap-5">
+                <div class="bg-indigo-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg shadow-indigo-200" id="round-num">1</div>
+                <div>
+                    <h2 id="round-indicator" class="text-2xl font-black text-gray-800">第 1 / 5 題</h2>
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Finding Pairs...</p>
+                </div>
+            </div>
+            
+            <div class="flex-1 max-w-md w-full">
+                <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden p-1">
+                    <div id="progress-fill" class="progress-bar-fill h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full w-full"></div>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <div id="timer-text" class="text-4xl font-black font-mono text-indigo-600 leading-none">10.0s</div>
+            </div>
+        </div>
+
+        <div id="grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 w-full content-start px-2"></div>
+
+        <button id="abort-btn" class="mt-10 px-10 py-3 bg-white/20 hover:bg-white/30 text-white font-black rounded-full transition-all backdrop-blur-md border border-white/20">
+            中止挑戰
+        </button>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="result-screen" class="hidden glass-panel p-12 rounded-[3rem] max-w-md w-full text-center z-10">
+        <div id="result-icon" class="text-8xl mb-6 scale-110 drop-shadow-xl">🏆</div>
+        <h2 id="result-title" class="text-4xl font-black text-gray-800 mb-8">挑戰結束！</h2>
+        
+        <div class="space-y-4 mb-10">
+            <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-gray-50">
+                <span class="text-gray-400 font-bold uppercase text-xs tracking-widest">答對題數</span>
+                <span id="stat-correct" class="text-2xl font-black text-indigo-600">5 / 5</span>
+            </div>
+            <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-gray-50">
+                <span class="text-gray-400 font-bold uppercase text-xs tracking-widest">平均用時</span>
+                <span id="stat-avg-time" class="text-2xl font-black text-indigo-600">2.45s</span>
+            </div>
+            <div class="flex justify-between items-center bg-indigo-600 p-6 rounded-2xl shadow-xl shadow-indigo-100">
+                <span class="text-indigo-100 font-bold uppercase text-xs tracking-widest">總耗時</span>
+                <span id="stat-total-time" class="text-2xl font-black text-white">12.3s</span>
+            </div>
+        </div>
+        
+        <button id="retry-btn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-5 rounded-2xl text-xl shadow-xl active:scale-95 mb-6">
+            再次挑戰
+        </button>
+
+        <div class="pt-6 border-t border-gray-100">
+            <a href="https://www.facebook.com/kevin.pptgame" target="_blank" class="designer-link text-gray-400 font-bold text-sm">
+                設計：簡報遊戲設計師 - 鄭凱文
+            </a>
+            <p class="mt-4 text-[10px] text-gray-300 font-bold uppercase tracking-[0.2em]">Game Designer Portfolio</p>
+        </div>
+    </div>
+
+    <script>
+        // --- 核心邏輯保持一致 ---
+        let state = {
+            config: { totalRounds: 5, itemCount: 30, minNum: 1, maxNum: 500, timeLimit: 10 },
+            current: { round: 0, correctCount: 0, roundTimes: [], remainingTime: 0, targetPair: null, selectedId: null, isGameOver: false, timerInterval: null }
+        };
+
+        const elements = {
+            totalRounds: document.getElementById('total-rounds'),
+            totalRoundsDisp: document.getElementById('total-rounds-display'),
+            itemCount: document.getElementById('item-count'),
+            itemCountDisp: document.getElementById('count-display'),
+            minRange: document.getElementById('min-range'),
+            maxRange: document.getElementById('max-range'),
+            gameTime: document.getElementById('game-time'),
+            gameTimeDisp: document.getElementById('time-display'),
+            grid: document.getElementById('grid'),
+            progress: document.getElementById('progress-fill'),
+            timerText: document.getElementById('timer-text'),
+            roundIndicator: document.getElementById('round-indicator'),
+            roundNum: document.getElementById('round-num'),
+            rangeError: document.getElementById('range-error'),
+            statCorrect: document.getElementById('stat-correct'),
+            statAvgTime: document.getElementById('stat-avg-time'),
+            statTotalTime: document.getElementById('stat-total-time'),
+            resultIcon: document.getElementById('result-icon'),
+            resultTitle: document.getElementById('result-title')
+        };
+
+        const screens = { setup: document.getElementById('setup-screen'), game: document.getElementById('game-screen'), result: document.getElementById('result-screen') };
+
+        // 參數監聽
+        elements.totalRounds.oninput = (e) => { state.config.totalRounds = parseInt(e.target.value); elements.totalRoundsDisp.innerText = state.config.totalRounds; };
+        elements.itemCount.oninput = (e) => { state.config.itemCount = parseInt(e.target.value); elements.itemCountDisp.innerText = state.config.itemCount; validateRange(); };
+        elements.gameTime.oninput = (e) => { state.config.timeLimit = parseInt(e.target.value); elements.gameTimeDisp.innerText = state.config.timeLimit + "s"; };
+        elements.minRange.onchange = validateRange;
+        elements.maxRange.onchange = validateRange;
+
+        function validateRange() {
+            const min = parseInt(elements.minRange.value) || 0;
+            const max = parseInt(elements.maxRange.value) || 0;
+            const isValid = (max - min + 1) >= state.config.itemCount;
+            elements.rangeError.classList.toggle('hidden', isValid);
+            document.getElementById('start-btn').disabled = !isValid;
+            document.getElementById('start-btn').classList.toggle('opacity-50', !isValid);
+            state.config.minNum = min; state.config.maxNum = max;
+            return isValid;
+        }
+
+        function showScreen(key) { Object.keys(screens).forEach(k => screens[k].classList.toggle('hidden', k !== key)); }
+
+        function startSession() {
+            state.current.correctCount = 0; state.current.roundTimes = []; state.current.round = 0;
+            showScreen('game'); nextRound();
+        }
+
+        function nextRound() {
+            state.current.round++;
+            state.current.selectedId = null;
+            state.current.isGameOver = false;
+            state.current.remainingTime = state.config.timeLimit;
+            elements.roundIndicator.innerText = `第 ${state.current.round} / ${state.config.totalRounds} 題`;
+            elements.roundNum.innerText = state.current.round;
+            setupGrid(); startTimer();
+        }
+
+        function setupGrid() {
+            elements.grid.innerHTML = '';
+            const rangeSize = state.config.maxNum - state.config.minNum + 1;
+            const targetNum = Math.floor(Math.random() * rangeSize) + state.config.minNum;
+            state.current.targetPair = targetNum;
+
+            const pool = new Set([targetNum]);
+            while (pool.size < state.config.itemCount - 1) pool.add(Math.floor(Math.random() * rangeSize) + state.config.minNum);
+            
+            const gameNumbers = Array.from(pool);
+            gameNumbers.push(targetNum);
+            gameNumbers.sort(() => Math.random() - 0.5);
+
+            gameNumbers.forEach((num, index) => {
+                const card = document.createElement('div');
+                card.className = 'number-card bg-white border-2 border-gray-50 rounded-2xl py-5 flex items-center justify-center text-xl font-black text-gray-700 cursor-pointer shadow-sm';
+                card.innerText = num;
+                card.dataset.value = num;
+                card.dataset.index = index;
+                card.onclick = () => handleCardClick(card);
+                elements.grid.appendChild(card);
+            });
+        }
+
+        function handleCardClick(card) {
+            if (state.current.isGameOver) return;
+            const val = parseInt(card.dataset.value);
+            const idx = card.dataset.index;
+
+            if (state.current.selectedId === idx) {
+                card.classList.remove('selected'); state.current.selectedId = null; return;
+            }
+
+            if (state.current.selectedId === null) {
+                state.current.selectedId = idx; card.classList.add('selected');
+            } else {
+                const prevCard = document.querySelector(`[data-index="${state.current.selectedId}"]`);
+                if (val === parseInt(prevCard.dataset.value)) {
+                    card.classList.add('correct'); prevCard.classList.remove('selected'); prevCard.classList.add('correct');
+                    state.current.roundTimes.push(state.config.timeLimit - state.current.remainingTime);
+                    state.current.correctCount++;
+                    finishRound(true);
+                } else {
+                    card.classList.add('wrong'); prevCard.classList.add('wrong');
+                    setTimeout(() => { card.classList.remove('wrong', 'selected'); prevCard.classList.remove('wrong', 'selected'); }, 400);
+                    state.current.selectedId = null;
+                }
+            }
+        }
+
+        function startTimer() {
+            if (state.current.timerInterval) clearInterval(state.current.timerInterval);
+            const start = Date.now();
+            const end = start + (state.config.timeLimit * 1000);
+
+            state.current.timerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = Math.max(0, (end - now) / 1000);
+                state.current.remainingTime = diff;
+                
+                const percentage = (diff / state.config.timeLimit) * 100;
+                elements.progress.style.width = `${percentage}%`;
+                elements.timerText.innerText = `${diff.toFixed(1)}s`;
+
+                if (diff <= 0) {
+                    state.current.roundTimes.push(state.config.timeLimit);
+                    finishRound(false);
+                }
+            }, 50);
+        }
+
+        function finishRound(success) {
+            state.current.isGameOver = true;
+            clearInterval(state.current.timerInterval);
+
+            if (!success) {
+                document.querySelectorAll('.number-card').forEach(c => {
+                    if (parseInt(c.dataset.value) === state.current.targetPair) c.classList.add('ring-4', 'ring-green-500', 'ring-offset-2', 'z-20');
+                });
+            }
+
+            setTimeout(() => {
+                if (state.current.round < state.config.totalRounds) nextRound();
+                else showFinalResult();
+            }, success ? 600 : 1800);
+        }
+
+        function showFinalResult() {
+            showScreen('result');
+            const total = state.current.roundTimes.reduce((a, b) => a + b, 0);
+            const avg = total / state.config.totalRounds;
+            elements.statCorrect.innerText = `${state.current.correctCount} / ${state.config.totalRounds}`;
+            elements.statAvgTime.innerText = `${avg.toFixed(2)}s`;
+            elements.statTotalTime.innerText = `${total.toFixed(1)}s`;
+
+            const rate = state.current.correctCount / state.config.totalRounds;
+            if (rate === 1) { elements.resultIcon.innerText = "🏆"; elements.resultTitle.innerText = "完美的勝利！"; }
+            else if (rate >= 0.6) { elements.resultIcon.innerText = "🌟"; elements.resultTitle.innerText = "表現很棒！"; }
+            else { elements.resultIcon.innerText = "💪"; elements.resultTitle.innerText = "繼續努力！"; }
+        }
+
+        document.getElementById('start-btn').onclick = startSession;
+        document.getElementById('retry-btn').onclick = startSession;
+        document.getElementById('abort-btn').onclick = () => { clearInterval(state.current.timerInterval); showScreen('setup'); };
+    </script>
+</body>
+</html>
