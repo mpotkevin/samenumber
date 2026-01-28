@@ -81,18 +81,12 @@
             75% { transform: translateX(4px); }
         }
 
-        /* 滑桿與輸入框 */
-        input[type=range] { -webkit-appearance: none; background: transparent; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: var(--primary); margin-top: -7px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
         .custom-input { border: 2px solid #e2e8f0; transition: all 0.2s; }
         .custom-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
         
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        /* 遊戲區域佈局 */
         #grid-area {
             flex: 1;
             width: 100%;
@@ -108,6 +102,17 @@
             width: fit-content;
             height: fit-content;
             margin: auto;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -125,39 +130,40 @@
         </div>
         
         <div class="space-y-6">
+            <!-- 參數輸入區 (移除拉桿，改為大輸入框以利手機操作) -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-3 bg-white/50 p-4 rounded-2xl border border-white/50">
+                <div class="space-y-2 bg-white/50 p-4 rounded-2xl border border-white/50">
                     <label class="text-xs font-black text-indigo-600 uppercase tracking-wider block">總題目數</label>
-                    <div class="flex items-center gap-3">
-                        <input type="number" id="total-rounds-input" value="10" min="1" max="50" class="custom-input w-16 text-center py-1 rounded-lg font-bold text-gray-800 outline-none">
-                        <input type="range" id="total-rounds-slider" min="1" max="50" step="1" value="10" class="flex-1">
-                    </div>
+                    <input type="number" id="total-rounds-input" value="10" min="1" max="99" class="custom-input w-full text-center py-3 rounded-xl font-black text-2xl text-gray-800 outline-none">
                 </div>
-                <div class="space-y-3 bg-white/50 p-4 rounded-2xl border border-white/50">
+                <div class="space-y-2 bg-white/50 p-4 rounded-2xl border border-white/50">
                     <label class="text-xs font-black text-indigo-600 uppercase tracking-wider block">單題數量</label>
-                    <div class="flex items-center gap-3">
-                        <input type="number" id="item-count-input" value="10" min="4" max="100" class="custom-input w-16 text-center py-1 rounded-lg font-bold text-gray-800 outline-none">
-                        <input type="range" id="item-count-slider" min="4" max="100" step="2" value="10" class="flex-1">
-                    </div>
+                    <input type="number" id="item-count-input" value="10" min="4" max="100" class="custom-input w-full text-center py-3 rounded-xl font-black text-2xl text-gray-800 outline-none">
                 </div>
             </div>
 
             <div class="bg-white/50 p-4 rounded-2xl space-y-4 border border-white/50">
-                <label class="text-xs font-black text-indigo-600 uppercase tracking-wider block">數字範圍設定 (0-999)</label>
+                <label class="text-xs font-black text-indigo-600 uppercase tracking-wider block text-center">數字範圍設定 (0-999)</label>
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="min-range" value="1" min="0" max="999" class="w-full bg-white rounded-xl px-4 py-3 outline-none custom-input font-bold" placeholder="最小">
-                    <input type="number" id="max-range" value="30" min="1" max="999" class="w-full bg-white rounded-xl px-4 py-3 outline-none custom-input font-bold" placeholder="最大">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] text-gray-400 font-bold ml-1 uppercase">從 (Min)</span>
+                        <input type="number" id="min-range" value="1" min="0" max="999" class="w-full bg-white rounded-xl px-4 py-3 outline-none custom-input font-black text-xl text-center">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] text-gray-400 font-bold ml-1 uppercase">到 (Max)</span>
+                        <input type="number" id="max-range" value="30" min="1" max="999" class="w-full bg-white rounded-xl px-4 py-3 outline-none custom-input font-black text-xl text-center">
+                    </div>
                 </div>
-                <p id="range-error" class="text-red-500 text-xs text-center hidden font-black bg-red-50 py-2 rounded-xl border border-red-100 italic">⚠️ 範圍不足：數字區間必須大於等於單題數量！</p>
-                <p id="limit-error" class="text-orange-500 text-[10px] text-center hidden font-black italic">⚠️ 提醒：數字範圍上限為 999。</p>
+                <p id="range-error" class="text-red-500 text-xs text-center hidden font-black bg-red-50 py-2 rounded-xl border border-red-100 italic">⚠️ 範圍不足：區間必須大於單題數量！</p>
+                <p id="limit-error" class="text-orange-500 text-[10px] text-center hidden font-black italic">⚠️ 提醒：最大範圍上限為 999。</p>
             </div>
 
             <div class="bg-white/50 p-4 rounded-2xl space-y-3 border border-white/50">
                 <div class="flex justify-between items-center">
-                    <label class="text-xs font-black text-indigo-600 uppercase tracking-wider">單題限時</label>
-                    <span id="time-display" class="text-xl font-black text-gray-800">30s</span>
+                    <label class="text-xs font-black text-indigo-600 uppercase tracking-wider">單題限時 (秒)</label>
+                    <input type="number" id="game-time" min="3" max="120" value="30" class="custom-input w-20 text-center py-1 rounded-lg font-bold text-indigo-600 outline-none">
                 </div>
-                <input type="range" id="game-time" min="3" max="120" step="1" value="30" class="w-full">
+                <input type="range" id="game-time-slider" min="3" max="120" step="1" value="30" class="w-full">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -179,7 +185,6 @@
 
     <!-- 遊戲主畫面 -->
     <div id="game-screen" class="hidden fixed inset-0 z-10 p-2 md:p-4 flex flex-col">
-        <!-- 極簡頂部欄 -->
         <div class="w-full max-w-5xl mx-auto glass-panel rounded-2xl px-4 py-2 flex items-center justify-between gap-4 shrink-0 mb-1">
             <div class="flex items-center gap-2">
                 <div class="bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-black" id="round-num">1</div>
@@ -191,12 +196,10 @@
             <div id="timer-text" class="text-xl font-black font-mono text-indigo-600 w-20 text-right">30.0s</div>
         </div>
 
-        <!-- 遊戲主動態區域 -->
         <div id="grid-area">
             <div id="grid"></div>
         </div>
 
-        <!-- 中止鈕 -->
         <div class="flex justify-center pb-2 shrink-0">
             <button id="abort-btn" class="px-6 py-1.5 bg-white/40 text-indigo-900 font-black rounded-full backdrop-blur-md border border-white/20 active:scale-95 text-xs shadow-sm">
                 中止挑戰
@@ -204,12 +207,38 @@
         </div>
     </div>
 
-    <!-- 結算畫面 -->
-    <div id="result-screen" class="hidden glass-panel p-10 rounded-[3rem] max-w-md w-full text-center z-20 mx-auto my-auto">
-        <div id="result-icon" class="text-8xl mb-6">🏆</div>
-        <h2 id="result-title" class="text-4xl font-black text-gray-800 mb-8">挑戰結束！</h2>
-        <button id="retry-btn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-5 rounded-2xl text-xl shadow-xl mb-4">再次挑戰</button>
-        <button id="back-btn" class="w-full text-gray-400 font-black py-2">返回主畫面</button>
+    <!-- 結算畫面 (詳細成績) -->
+    <div id="result-screen" class="hidden glass-panel p-6 rounded-[2.5rem] max-w-md w-full text-center z-20 mx-auto my-auto shadow-2xl">
+        <div id="result-icon" class="text-6xl mb-4 drop-shadow-lg">🏆</div>
+        <h2 id="result-title" class="text-3xl font-black text-gray-800 mb-6">挑戰結束！</h2>
+        
+        <div class="grid grid-cols-2 gap-3 mb-8">
+            <div class="stat-card">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">正確題數</span>
+                <span id="stat-correct-val" class="text-2xl font-black text-green-500">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">錯誤題數</span>
+                <span id="stat-wrong-val" class="text-2xl font-black text-red-500">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">平均用時</span>
+                <span id="stat-avg-val" class="text-2xl font-black text-indigo-600">0.0s</span>
+            </div>
+            <div class="stat-card">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">總計耗時</span>
+                <span id="stat-total-val" class="text-2xl font-black text-indigo-400">0.0s</span>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <button id="retry-btn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-4 rounded-2xl text-xl shadow-xl active:scale-95 transition-all">
+                再次挑戰
+            </button>
+            <button id="back-btn" class="w-full text-gray-400 font-black py-2 hover:text-gray-600">
+                返回主畫面
+            </button>
+        </div>
     </div>
 
     <!-- 歷史紀錄彈窗 -->
@@ -237,70 +266,57 @@
     </div>
 
     <script>
+        // 核心狀態
         let state = {
             config: { totalRounds: 10, itemCount: 10, minNum: 1, maxNum: 30, timeLimit: 30 },
             current: { round: 0, correctCount: 0, roundTimes: [], remainingTime: 0, targetPair: null, selectedId: null, isGameOver: false, timerInterval: null },
-            history: JSON.parse(localStorage.getItem('num_match_history_v5') || '[]')
+            history: JSON.parse(localStorage.getItem('num_match_history_v6') || '[]')
         };
 
+        // DOM 元素選取
         const els = {
-            totalSld: document.getElementById('total-rounds-slider'),
             totalInp: document.getElementById('total-rounds-input'),
-            countSld: document.getElementById('item-count-slider'),
             countInp: document.getElementById('item-count-input'),
             minRange: document.getElementById('min-range'),
             maxRange: document.getElementById('max-range'),
             gameTime: document.getElementById('game-time'),
+            gameTimeSld: document.getElementById('game-time-slider'),
             timeDisp: document.getElementById('time-display'),
             grid: document.getElementById('grid'),
             gridArea: document.getElementById('grid-area'),
             progress: document.getElementById('progress-fill'),
             timer: document.getElementById('timer-text'),
-            historyList: document.getElementById('history-list'),
             rangeError: document.getElementById('range-error'),
             limitError: document.getElementById('limit-error'),
             startBtn: document.getElementById('start-btn')
         };
 
-        const screens = { setup: document.getElementById('setup-screen'), game: document.getElementById('game-screen'), result: document.getElementById('result-screen') };
+        const screens = { 
+            setup: document.getElementById('setup-screen'), 
+            game: document.getElementById('game-screen'), 
+            result: document.getElementById('result-screen') 
+        };
 
-        // 參數連動與即時驗證
-        function sync(slider, input, key) {
-            slider.oninput = (e) => { 
-                input.value = e.target.value; 
-                state.config[key] = parseInt(e.target.value); 
-                validate(); 
-            };
-            input.oninput = (e) => { 
-                let v = parseInt(e.target.value); if(!v) return;
-                v = Math.max(slider.min, Math.min(slider.max, v));
-                slider.value = v; state.config[key] = v; 
-                validate();
-            };
-        }
-        sync(els.totalSld, els.totalInp, 'totalRounds');
-        sync(els.countSld, els.countInp, 'itemCount');
-
-        els.gameTime.oninput = (e) => { state.config.timeLimit = parseInt(e.target.value); els.timeDisp.innerText = e.target.value + "s"; };
-        els.minRange.oninput = validate;
-        els.maxRange.oninput = validate;
-
+        // 參數驗證邏輯
         function validate() {
-            let min = parseInt(els.minRange.value);
-            let max = parseInt(els.maxRange.value);
+            let total = parseInt(els.totalInp.value) || 1;
+            let count = parseInt(els.countInp.value) || 4;
+            let min = parseInt(els.minRange.value) || 0;
+            let max = parseInt(els.maxRange.value) || 0;
 
-            // 強制上限限制 (1000 以內，不包含 1000)
             let limitExceeded = false;
             if (min >= 1000) { min = 999; els.minRange.value = 999; limitExceeded = true; }
             if (max >= 1000) { max = 999; els.maxRange.value = 999; limitExceeded = true; }
             if (min < 0) { min = 0; els.minRange.value = 0; }
             if (max < 1) { max = 1; els.maxRange.value = 1; }
 
+            state.config.totalRounds = total;
+            state.config.itemCount = count;
             state.config.minNum = min;
             state.config.maxNum = max;
             
             const rangeSize = max - min + 1;
-            const isValid = rangeSize >= state.config.itemCount;
+            const isValid = rangeSize >= count;
             
             els.rangeError.classList.toggle('hidden', isValid);
             els.limitError.classList.toggle('hidden', !limitExceeded);
@@ -308,15 +324,37 @@
             return isValid;
         }
 
+        // 時間拉桿同步
+        els.gameTime.oninput = (e) => { 
+            let v = parseInt(e.target.value) || 3;
+            v = Math.max(3, Math.min(120, v));
+            els.gameTimeSld.value = v;
+            state.config.timeLimit = v;
+        };
+        els.gameTimeSld.oninput = (e) => {
+            els.gameTime.value = e.target.value;
+            state.config.timeLimit = parseInt(e.target.value);
+        };
+
+        els.totalInp.oninput = validate;
+        els.countInp.oninput = validate;
+        els.minRange.oninput = validate;
+        els.maxRange.oninput = validate;
+
         function showScreen(key) {
-            Object.keys(screens).forEach(k => screens[k].classList.toggle('hidden', k !== key));
+            Object.keys(screens).forEach(k => {
+                if (screens[k]) screens[k].classList.toggle('hidden', k !== key);
+            });
             document.body.className = (key === 'game') ? 'no-scroll-mode' : 'scroll-mode';
         }
 
         function start() {
             if (!validate()) return;
-            state.current.correctCount = 0; state.current.roundTimes = []; state.current.round = 0;
-            showScreen('game'); next();
+            state.current.correctCount = 0; 
+            state.current.roundTimes = []; 
+            state.current.round = 0;
+            showScreen('game'); 
+            next();
         }
 
         function next() {
@@ -324,9 +362,12 @@
             state.current.selectedId = null;
             state.current.isGameOver = false;
             state.current.remainingTime = state.config.timeLimit;
+            
             document.getElementById('round-num').innerText = state.current.round;
             document.getElementById('round-indicator').innerText = `${state.current.round} / ${state.config.totalRounds}`;
-            setupGrid(); startTimer();
+            
+            setupGrid(); 
+            startTimer();
         }
 
         function setupGrid() {
@@ -432,40 +473,75 @@
 
         function result() {
             showScreen('result');
-            const total = state.current.roundTimes.reduce((a,b)=>a+b, 0);
-            document.getElementById('stat-correct').innerText = `${state.current.correctCount} / ${state.config.totalRounds}`;
-            document.getElementById('stat-total-time').innerText = `${total.toFixed(1)}s`;
+            const totalTime = state.current.roundTimes.reduce((a,b)=>a+b, 0);
+            const totalRounds = state.config.totalRounds;
+            const correct = state.current.correctCount;
+            const wrong = totalRounds - correct;
+            const avgTime = (totalTime / totalRounds).toFixed(1);
+
+            document.getElementById('stat-correct-val').innerText = correct;
+            document.getElementById('stat-wrong-val').innerText = wrong;
+            document.getElementById('stat-avg-val').innerText = `${avgTime}s`;
+            document.getElementById('stat-total-val').innerText = `${totalTime.toFixed(1)}s`;
+            
             const record = {
                 date: new Date().toLocaleString([], {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}),
-                score: state.current.correctCount, total: state.config.totalRounds, avgTime: (total/state.config.totalRounds).toFixed(1)
+                score: correct, 
+                total: totalRounds, 
+                avgTime: avgTime
             };
             state.history.unshift(record);
             state.history = state.history.slice(0, 10);
-            localStorage.setItem('num_match_history_v5', JSON.stringify(state.history));
+            localStorage.setItem('num_match_history_v6', JSON.stringify(state.history));
+            
+            // 根據表現顯示標題與圖示
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            if (correct === totalRounds) { resultIcon.innerText = "🏆"; resultTitle.innerText = "完美的勝利！"; }
+            else if (correct >= totalRounds * 0.7) { resultIcon.innerText = "🌟"; resultTitle.innerText = "表現很優異！"; }
+            else { resultIcon.innerText = "💪"; resultTitle.innerText = "繼續加油！"; }
         }
 
-        els.startBtn.onclick = start;
-        document.getElementById('retry-btn').onclick = start;
-        document.getElementById('back-btn').onclick = () => showScreen('setup');
-        document.getElementById('view-history-btn').onclick = () => {
-            els.historyList.innerHTML = state.history.length ? '' : '<p class="text-center py-10 text-gray-400">目前無紀錄</p>';
-            state.history.forEach(h => {
-                const d = document.createElement('div');
-                d.className = 'bg-white/60 p-4 rounded-xl flex justify-between items-center border border-white/50 text-sm';
-                d.innerHTML = `<div><div class="text-[10px] font-black text-gray-400">${h.date}</div><div class="font-black">答對 ${h.score}/${h.total}</div></div><div class="text-indigo-600 font-black">${h.avgTime}s</div>`;
-                els.historyList.appendChild(d);
-            });
-            document.getElementById('history-modal').classList.remove('hidden');
-        };
-        document.getElementById('close-history-btn').onclick = () => document.getElementById('history-modal').classList.add('hidden');
-        document.getElementById('clear-history-btn').onclick = () => { state.history = []; localStorage.removeItem('num_match_history_v5'); document.getElementById('history-modal').classList.add('hidden'); };
-        const abortM = document.getElementById('abort-modal');
-        document.getElementById('abort-btn').onclick = () => abortM.classList.remove('hidden');
-        document.getElementById('cancel-abort-btn').onclick = () => abortM.classList.add('hidden');
-        document.getElementById('confirm-abort-btn').onclick = () => { clearInterval(state.current.timerInterval); abortM.classList.add('hidden'); showScreen('setup'); };
+        // 初始化
+        window.onload = () => {
+            els.startBtn.onclick = start;
+            document.getElementById('retry-btn').onclick = start;
+            document.getElementById('back-btn').onclick = () => showScreen('setup');
 
-        window.addEventListener('resize', () => { if (!screens.game.classList.contains('hidden')) setupGrid(); });
-        validate();
+            document.getElementById('view-history-btn').onclick = () => {
+                const list = document.getElementById('history-list');
+                list.innerHTML = state.history.length ? '' : '<p class="text-center py-10 text-gray-400">目前無紀錄</p>';
+                state.history.forEach(h => {
+                    const d = document.createElement('div');
+                    d.className = 'bg-white/60 p-4 rounded-xl flex justify-between items-center border border-white/50 text-sm';
+                    d.innerHTML = `<div><div class="text-[10px] font-black text-gray-400">${h.date}</div><div class="font-black">正確 ${h.score}/${h.total}</div></div><div class="text-indigo-600 font-black">${h.avgTime}s/題</div>`;
+                    list.appendChild(d);
+                });
+                document.getElementById('history-modal').classList.remove('hidden');
+            };
+
+            document.getElementById('close-history-btn').onclick = () => document.getElementById('history-modal').classList.add('hidden');
+            document.getElementById('clear-history-btn').onclick = () => { 
+                state.history = []; 
+                localStorage.removeItem('num_match_history_v6'); 
+                document.getElementById('history-modal').classList.add('hidden'); 
+            };
+
+            const abortM = document.getElementById('abort-modal');
+            document.getElementById('abort-btn').onclick = () => abortM.classList.remove('hidden');
+            document.getElementById('cancel-abort-btn').onclick = () => abortM.classList.add('hidden');
+            document.getElementById('confirm-abort-btn').onclick = () => { 
+                clearInterval(state.current.timerInterval); 
+                abortM.classList.add('hidden'); 
+                showScreen('setup'); 
+            };
+
+            window.addEventListener('resize', () => { 
+                if (!screens.game.classList.contains('hidden')) setupGrid(); 
+            });
+
+            validate();
+        };
     </script>
 </body>
 </html>
